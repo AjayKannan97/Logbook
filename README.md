@@ -48,7 +48,7 @@ The README includes a section to help with common issues, such as:
 The project is released under the MIT License, which is a permissive free software license. This means you are free to use, modify, and distribute the code for both private and commercial use, as long as you include the original copyright and license notice.
 
 ----------------------------
-# For Developers -destruction
+# For Developers -
 
 A modern customer management system built with FastAPI (Python) backend and React frontend.
 
