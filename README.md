@@ -1,5 +1,54 @@
 # Logbook - Customer Management System
 
+Logbook is a modern customer management system designed to help businesses efficiently manage and track their customer information. It's built as a full-stack web application, meaning it has a separate backend (server-side) and frontend (client-side) that work together. The backend is powered by FastAPI, a high-performance Python framework, while the frontend is built with React, a popular JavaScript library for building user interfaces.
+
+## Key Features
+
+Customer Management: It provides a centralized place to add, view, and manage customer details, including their name, phone number, the amount they owe, and their current payment status.
+
+Search Functionality: You can easily search for specific customers, making it simple to find information quickly.
+
+Payment Tracking: The system allows you to track the payment status of each customer, which is essential for managing accounts receivable.
+
+Transaction and Audit Logging: It automatically logs all transactions and maintains an audit trail. This means every action, such as adding a new customer or updating their details, is recorded, providing a clear history of changes for accountability and security.
+
+Responsive UI: The user interface (UI) is designed to be responsive, which means it will adapt and look good on various devices, from desktops to mobile phones.
+
+## Technical Requirements and Setup
+
+To run Logbook, you'll need to set up the following prerequisites:
+
+- Python 3.8+: This is required for the FastAPI backend.
+- Node.js 16+: This is needed to run the React frontend.
+- PostgreSQL: The project uses a PostgreSQL database to store all customer and transaction data.
+
+The README provides detailed instructions for setting up the database and starting both the backend and frontend servers, which involves installing dependencies and running specific commands in the project's directories.
+
+## API Endpoints
+
+The FastAPI backend exposes several API endpoints to handle data requests from the frontend. The main endpoint for adding a new customer requires specific fields:
+
+- name: The customer's full name.
+- phone: Their contact phone number.
+- amount: The amount they owe.
+- paid_status: A boolean value (true or false) to indicate if the payment has been made.
+
+These endpoints are what allow the frontend and backend to communicate and perform actions like creating, reading, updating, and deleting customer information.
+
+## Troubleshooting
+
+The README includes a section to help with common issues, such as:
+
+- Database connection errors: Tips for ensuring your PostgreSQL database is running and configured correctly.
+- Port conflicts: Advice on what to do if another application is already using the ports required by the backend or frontend servers.
+- This information helps users quickly resolve common problems they might encounter during setup.
+
+## Licensing
+
+The project is released under the MIT License, which is a permissive free software license. This means you are free to use, modify, and distribute the code for both private and commercial use, as long as you include the original copyright and license notice.
+
+----------------------------
+
 A modern customer management system built with FastAPI (Python) backend and React frontend.
 
 ## Features
