@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: logbook_postgres_prod
+    environment:
+      POSTGRES_DB: logbook
+      POSTGRES_USER: ${POSTGRES_USER:-logbook_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-logbook_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+      - ./backend/logbook.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-logbook_user} -d logbook"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - logbook_network_prod
+    restart: unless-stopped
+
+  # FastAPI Backend (Production)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: logbook_backend_prod
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-logbook_user}:${POSTGRES_PASSWORD:-logbook_password}@postgres:5432/logbook
+      PYTHONPATH: /app
+      ENVIRONMENT: production
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - logbook_network_prod
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+volumes:
+  postgres_data_prod:
+
+networks:
+  logbook_network_prod:
+    driver: bridge

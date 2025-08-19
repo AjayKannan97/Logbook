@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: logbook_postgres
+    environment:
+      POSTGRES_DB: logbook
+      POSTGRES_USER: logbook_user
+      POSTGRES_PASSWORD: logbook_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/logbook.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U logbook_user -d logbook"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - logbook_network
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: logbook_backend
+    environment:
+      DATABASE_URL: postgresql://logbook_user:logbook_password@postgres:5432/logbook
+      PYTHONPATH: /app
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    networks:
+      - logbook_network
+    restart: unless-stopped
+
+  # Optional: pgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: logbook_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@logbook.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - logbook_network
+    profiles:
+      - tools
+
+volumes:
+  postgres_data:
+
+networks:
+  logbook_network:
+    driver: bridge

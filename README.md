@@ -194,6 +194,44 @@ ALTER TABLE customers ADD COLUMN amount NUMERIC(10, 2);
 ALTER TABLE customers ADD COLUMN status TEXT NOT NULL DEFAULT 'yet to pay' CHECK (status IN ('yet to pay', 'processing', 'paid'));
 ```
 
+## 🐳 Docker Support
+
+### Quick Docker Start
+```bash
+# Start everything with Docker (recommended)
+./start-docker.sh
+
+# Or manually with docker-compose
+docker-compose up --build
+```
+
+### Docker Services
+- **Backend**: FastAPI container with auto-reload
+- **Database**: PostgreSQL 15 with persistent storage
+- **pgAdmin**: Database management interface (optional)
+- **Networks**: Isolated container networking
+
+### Production Docker
+```bash
+# Use production-optimized containers
+docker-compose -f docker-compose.prod.yml up --build
+```
+
+### Docker Commands
+```bash
+# View running containers
+docker-compose ps
+
+# View logs
+docker-compose logs backend
+
+# Stop services
+docker-compose down
+
+# Rebuild containers
+docker-compose up --build
+```
+
 ## License
 
 This project is open source and available under the MIT License.
