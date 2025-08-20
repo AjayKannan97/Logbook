@@ -1,8 +1,32 @@
 # Logbook Backend API
 
-A FastAPI-based backend service for the Logbook customer management system.
+A FastAPI-based backend service for the Logbook customer management system, now with full Docker support and enhanced error handling.
 
-## Features
+## 🚀 Quick Start
+
+### Option 1: Docker (Recommended)
+```bash
+# From project root
+./start-docker.sh
+
+# Or manually
+docker compose up --build
+```
+
+### Option 2: Local Development
+```bash
+# Create and activate virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run server
+python main.py
+```
+
+## ✨ Features
 
 - **Customer Management**: Create, read, and manage customer records
 - **Payment Status Tracking**: Track payment status (yet to pay, processing, paid)
@@ -10,65 +34,40 @@ A FastAPI-based backend service for the Logbook customer management system.
 - **Audit Trail**: Comprehensive logging of all database changes
 - **Search Functionality**: Search customers across all fields
 - **RESTful API**: Clean, documented API endpoints
+- **Docker Support**: Full containerization with auto-reload
+- **Enhanced Validation**: Improved error handling and debug logging
+- **Real-time Logging**: Detailed request/response logging
 
-## Tech Stack
+## 🐳 Docker Support
+
+### Development Container
+```bash
+# Build and run
+docker compose up --build
+
+# View logs
+docker compose logs -f backend
+
+# Restart after code changes
+docker compose restart backend
+```
+
+### Production Container
+```bash
+# Use production Dockerfile
+docker compose -f ../docker-compose.prod.yml up --build
+```
+
+## 🛠️ Tech Stack
 
 - **Framework**: FastAPI (Python 3.8+)
 - **Database**: PostgreSQL with SQLAlchemy ORM
-- **Authentication**: None (development setup)
+- **Validation**: Pydantic v2 with enhanced error handling
+- **Containerization**: Docker with multi-stage builds
 - **Documentation**: Auto-generated OpenAPI/Swagger docs
+- **Logging**: Comprehensive debug and audit logging
 
-## Prerequisites
-
-- Python 3.8+
-- PostgreSQL database
-- pip (Python package manager)
-
-## Installation
-
-1. **Navigate to backend directory:**
-   ```bash
-   cd backend
-   ```
-
-2. **Create virtual environment:**
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   ```
-
-3. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Database Setup:**
-   ```bash
-   # Create PostgreSQL database
-   CREATE DATABASE logbook;
-   
-   # Or use the provided schema file
-   psql -d logbook -f logbook.sql
-   ```
-
-5. **Environment Variables (optional):**
-   ```bash
-   export DATABASE_URL="postgresql://username:password@localhost:5432/logbook"
-   ```
-
-## Running the Server
-
-```bash
-# Activate virtual environment
-source .venv/bin/activate
-
-# Start the server
-python main.py
-```
-
-The API will be available at `http://localhost:8000`
-
-## API Endpoints
+## 📡 API Endpoints
 
 ### Core Endpoints
 - `GET /` - Health check
@@ -77,11 +76,57 @@ The API will be available at `http://localhost:8000`
 - `GET /customers/search/?q={query}` - Search customers
 - `POST /transactions/` - Add a new transaction
 
+### Testing & Debug
+- `POST /test-customer/` - Test customer validation schema
+
 ### API Documentation
 - **Swagger UI**: `http://localhost:8000/docs`
 - **ReDoc**: `http://localhost:8000/redoc`
 
-## Database Schema
+## 📊 Customer Data Model
+
+### Required Fields
+- **name** (string): Customer's full name
+
+### Optional Fields
+- **phone** (string): Contact phone number
+- **amount** (float): Outstanding balance
+- **status** (string): Payment status - "yet to pay", "processing", or "paid"
+- **upi_vpa** (string): UPI Virtual Payment Address
+- **credit_limit** (float): Customer's credit limit
+- **billing_cycle_day** (integer): Day of month for billing cycle
+
+### Example Request
+```json
+{
+  "name": "John Doe",
+  "phone": "1234567890",
+  "amount": 150.75,
+  "status": "yet to pay",
+  "credit_limit": 500.00
+}
+```
+
+## 🔧 Enhanced Error Handling
+
+### Validation Errors (422)
+The API now provides detailed validation errors with debug logging:
+
+```bash
+# Check backend logs for detailed error information
+docker compose logs backend
+
+# Test validation endpoint
+curl -X POST http://localhost:8000/test-customer/
+```
+
+### Debug Logging
+- **Request Data**: Logs all received customer data
+- **Validation Results**: Shows successful/failed validations
+- **Database Operations**: Tracks all database changes
+- **Error Details**: Comprehensive error information
+
+## 🗄️ Database Schema
 
 ### Customers Table
 ```sql
@@ -124,87 +169,81 @@ CREATE TABLE logs (
 );
 ```
 
-## Customer Fields
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| name | string | ✅ | Customer's full name |
-| phone | string | ❌ | Phone number |
-| amount | numeric | ❌ | Amount/balance |
-| status | string | ✅ | Payment status |
-| upi_vpa | string | ❌ | UPI Virtual Payment Address |
-| credit_limit | numeric | ❌ | Credit limit |
-| billing_cycle_day | integer | ❌ | Day of month for billing |
-
-## Status Values
-
-- **"yet to pay"** - Payment pending
-- **"processing"** - Payment being processed
-- **"paid"** - Payment completed
-
-## Development
-
-### Project Structure
-```
-backend/
-├── main.py              # FastAPI application entry point
-├── requirements.txt     # Python dependencies
-├── logbook.sql         # Database schema
-├── test_api.py         # API testing script
-└── README.md           # This file
-```
-
-### Adding New Features
-1. Update the SQLAlchemy models in `main.py`
-2. Add new Pydantic schemas for request/response validation
-3. Create new API endpoints
-4. Update database schema if needed
-5. Test with the provided test script
-
-## Testing
-
-Run the test script to verify API functionality:
-```bash
-python test_api.py
-```
-
-## Troubleshooting
+## 🚨 Troubleshooting
 
 ### Common Issues
 
-1. **Database Connection Error**
-   - Ensure PostgreSQL is running
-   - Check database credentials in DATABASE_URL
-   - Verify database exists
+1. **422 Unprocessable Entity**
+   - Check required fields (name is mandatory)
+   - Verify data types (amount should be numeric)
+   - Ensure status is one of: "yet to pay", "processing", "paid"
+   - View detailed logs: `docker compose logs backend`
 
-2. **Port Already in Use**
+2. **Docker Issues**
    ```bash
-   lsof -ti:8000 | xargs kill -9 2>/dev/null || echo "No process on port 8000"
+   # Start Docker Desktop
+   open /Applications/Docker.app
+   
+   # Restart containers
+   docker compose down
+   ./start-docker.sh
    ```
 
-3. **Import Errors**
-   - Ensure virtual environment is activated
-   - Check all dependencies are installed
+3. **Database Connection Error**
+   - Ensure PostgreSQL container is running
+   - Check logs: `docker compose logs postgres`
 
-4. **Database Schema Issues**
-   - Run the migration script if needed
-   - Check table structure matches models
+4. **Code Changes Not Reflecting**
+   ```bash
+   # Restart backend container
+   docker compose restart backend
+   ```
 
-### Logs
-- Check console output for detailed error messages
-- Database logs are stored in the `logs` table
-- API access logs are displayed in the console
+### Viewing Logs
+```bash
+# All services
+docker compose logs -f
 
-## Deployment
+# Backend only
+docker compose logs -f backend
 
-### Production Considerations
-- Use environment variables for sensitive data
-- Implement proper authentication/authorization
-- Use production-grade database (not SQLite)
-- Set up proper logging and monitoring
-- Use HTTPS in production
-- Consider using Gunicorn or uWSGI with FastAPI
+# Last N lines
+docker compose logs --tail=50 backend
+```
 
-## License
+## 🔄 Development Workflow
+
+### Making Changes
+1. **Edit code** in your local directory
+2. **Restart backend** to apply changes:
+   ```bash
+   docker compose restart backend
+   ```
+3. **Check logs** for any errors:
+   ```bash
+   docker compose logs backend
+   ```
+
+### Testing Changes
+```bash
+# Test customer creation
+curl -X POST http://localhost:8000/customers/ \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Test Customer", "amount": 100.50}'
+
+# Test validation endpoint
+curl -X POST http://localhost:8000/test-customer/
+```
+
+## 📝 Recent Updates
+
+- ✅ **Docker Integration**: Full containerization with auto-reload
+- ✅ **Enhanced Validation**: Improved Pydantic models and error handling
+- ✅ **Debug Logging**: Comprehensive request/response logging
+- ✅ **Test Endpoints**: Added validation testing endpoints
+- ✅ **Better Error Messages**: Detailed 422 error information
+- ✅ **Pydantic Compatibility**: Support for both v1 and v2 methods
+
+## 📄 License
 
 This project is open source and available under the MIT License.

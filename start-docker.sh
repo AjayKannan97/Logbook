@@ -10,11 +10,23 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
+# Check which docker compose command to use
+if docker compose version > /dev/null 2>&1; then
+    DOCKER_COMPOSE_CMD="docker compose"
+    echo "✅ Using Docker Compose v2 (docker compose)"
+elif docker-compose --version > /dev/null 2>&1; then
+    DOCKER_COMPOSE_CMD="docker-compose"
+    echo "✅ Using Docker Compose v1 (docker-compose)"
+else
+    echo "❌ Docker Compose not found. Please install Docker Compose."
+    exit 1
+fi
+
 # Function to cleanup containers
 cleanup() {
     echo ""
     echo "🛑 Stopping containers..."
-    docker-compose down
+    $DOCKER_COMPOSE_CMD down
     echo "✅ Containers stopped"
     exit 0
 }
@@ -24,7 +36,7 @@ trap cleanup SIGINT SIGTERM
 
 # Build and start services
 echo "🔨 Building and starting services..."
-docker-compose up --build
+$DOCKER_COMPOSE_CMD up --build
 
 echo ""
 echo "🎉 Logbook is now running with Docker!"

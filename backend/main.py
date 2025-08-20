@@ -75,12 +75,26 @@ class CustomerCreate(BaseModel):
         if v not in valid_statuses:
             raise ValueError(f"Status must be one of: {valid_statuses}")
         return v
+    
+    def to_dict(self):
+        """Convert to dict for compatibility"""
+        try:
+            return self.model_dump()
+        except AttributeError:
+            return self.dict()
 
 class TransactionCreate(BaseModel):
     customer_id: int
     type: str
     amount: float
     description: str = None
+    
+    def to_dict(self):
+        """Convert to dict for compatibility"""
+        try:
+            return self.model_dump()
+        except AttributeError:
+            return self.dict()
 
 # Helper - log changes
 def log_action(session, table, action, record_id, old_data, new_data):
@@ -96,16 +110,19 @@ def log_action(session, table, action, record_id, old_data, new_data):
 # Routes
 @app.post("/customers/")
 def create_customer(customer: CustomerCreate):
+    print(f"Received customer data: {customer.to_dict()}")  # Debug logging
     db = SessionLocal()
     try:
-        new_customer = Customer(**customer.model_dump())
+        new_customer = Customer(**customer.to_dict())
         db.add(new_customer)
         db.commit()
         db.refresh(new_customer)
-        log_action(db, "customers", "INSERT", new_customer.customer_id, None, customer.model_dump())
+        log_action(db, "customers", "INSERT", new_customer.customer_id, None, customer.to_dict())
+        print(f"Customer created successfully with ID: {new_customer.customer_id}")  # Debug logging
         return new_customer
     except Exception as e:
         db.rollback()
+        print(f"Error creating customer: {e}")  # Debug logging
         raise HTTPException(status_code=400, detail=str(e))
     finally:
         db.close()
@@ -141,11 +158,11 @@ def search_customers(q: str = ""):
 def add_transaction(txn: TransactionCreate):
     db = SessionLocal()
     try:
-        new_txn = Transaction(**txn.model_dump())
+        new_txn = Transaction(**txn.to_dict())
         db.add(new_txn)
         db.commit()
         db.refresh(new_txn)
-        log_action(db, "transactions", "INSERT", new_txn.transaction_id, None, txn.dict())
+        log_action(db, "transactions", "INSERT", new_txn.transaction_id, None, txn.to_dict())
         return new_txn
     except Exception as e:
         db.rollback()
@@ -156,6 +173,31 @@ def add_transaction(txn: TransactionCreate):
 @app.get("/")
 def read_root():
     return {"message": "Logbook API is running!"}
+
+@app.post("/test-customer/")
+def test_customer_creation():
+    """Test endpoint to debug customer creation"""
+    test_data = {
+        "name": "Test Customer",
+        "phone": "1234567890",
+        "amount": 100.50,
+        "status": "yet to pay"
+    }
+    
+    try:
+        customer = CustomerCreate(**test_data)
+        return {
+            "message": "CustomerCreate validation successful",
+            "data": customer.to_dict(),
+            "validation": "passed"
+        }
+    except Exception as e:
+        return {
+            "message": "CustomerCreate validation failed",
+            "error": str(e),
+            "data": test_data,
+            "validation": "failed"
+        }
 
 if __name__ == "__main__":
     import uvicorn

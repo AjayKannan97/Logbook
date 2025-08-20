@@ -24,13 +24,15 @@ echo "-----------------------------"
 
 # Start backend in background
 cd backend
-if [ ! -d ".venv" ]; then
+if [ ! -d "../.venv" ]; then
     echo "📦 Creating virtual environment..."
+    cd ..
     python3 -m venv .venv
+    cd backend
 fi
 
 echo "🔌 Activating virtual environment..."
-source .venv/bin/activate
+source ../.venv/bin/activate
 
 echo "📥 Installing dependencies..."
 pip install -r requirements.txt > /dev/null 2>&1
